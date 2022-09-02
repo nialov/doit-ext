@@ -23,9 +23,6 @@ classifiers = [
 ]
 include = ["CHANGELOG.md"]
 
-[tool.poetry.scripts]
-doit-ext = "doit_ext.cli:app"
-
 [tool.poetry.dependencies]
 python = "^3.8"
 
@@ -49,6 +46,7 @@ markupsafe = {version = "*", optional = true}
 
 # Typecheck
 mypy = {version = "*", optional = true}
+doit = {extras = ["toml"], version = "^0.36.0"}
 
 [tool.poetry.dev-dependencies]
 # TODO: copier could be installed outside the poetry environment
