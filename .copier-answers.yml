@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier
+_commit: 57d586c
+_src_path: https://github.com/nialov/nialov-py-template.git
+classifier: 'Topic :: Scientific/Engineering :: GIS'
+description: Utilities for doit task specification.
+email: nikolasovaskainen@gmail.com
+full_name: Nikolas Ovaskainen
+github_account: nialov
+keyword: data
+package: doit_ext
+year: 2022
+

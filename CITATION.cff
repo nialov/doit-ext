@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+
+- family-names: Ovaskainen
+  given-names: Nikolas
+title: "doit-ext"
+version: "0.0.0"
+date-released: "2022-01-01"
+keywords:
+  - python
+  - data
+contact:
+  - email: "nikolasovaskainen@gmail.com"
+url: "https://github.com/nialov/doit-ext"
+repository-code: "https://github.com/nialov/doit-ext"
+
