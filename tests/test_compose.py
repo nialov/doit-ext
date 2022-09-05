@@ -73,6 +73,7 @@ def test_composetask():
     """
 
     mkdir_cmd = "mkdir -p tmp"
+    mkdir_cmd_2 = "mkdir -p tmp2"
     compose_task = (
         compose.ComposeTask()
         .add_actions(mkdir_cmd)
@@ -80,6 +81,7 @@ def test_composetask():
         .add_config_dependency(dict(y=4))
         .add_file_deps("dodo.py", Path("setup.py"))
         .add_result_dep("other_task")
+        .add_actions(mkdir_cmd_2)
     )
 
     compiled_compose_task = compose_task.compile()
@@ -93,6 +95,8 @@ def test_composetask():
 
         if key == "actions":
             assert mkdir_cmd in values
+            # Test that order is the same as inputted
+            assert values.index(mkdir_cmd) < values.index(mkdir_cmd_2)
 
         if key == "uptodate":
             assert all(isinstance(val, (config_changed, result_dep)) for val in values)
