@@ -96,7 +96,6 @@ class ComposeTask(NamedTuple):
                     ...,
                 ],
                 Dict[str, Any],
-                UpToDate,
             ],
         ],
     ) -> "ComposeTask":
@@ -196,6 +195,8 @@ class ComposeTask(NamedTuple):
         """
         resolved = _resolve_named_tuple_dict(self)
         resolved["uptodate"] = self.uptodate.compile()
+
+        # Remove dictionary keys with empty tuples as values
         cleaned_resolved = resolved.copy()
         for key, items in resolved.items():
             if items is None or len(items) == 0:
