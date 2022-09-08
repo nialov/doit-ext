@@ -3,6 +3,24 @@ Documentation
 
 |Documentation Status| |PyPI Status| |CI Test| |Coverage|
 
+Motivation for software
+-----------------------
+
+`doit <https://github.com/pydoit/doit>`__ is an excellent package for
+creating tasks with e.g., file dependencies and specific targets with
+likeness to ``make``. The definition of *tasks*, as they are called in
+``doit``, is done by creating a function that returns a dictionary
+(``return dict()``) or a generator of dictionaries (``yield dict()``).
+This provides a simple interface for creating tasks. However, the
+simplicity results in a lot of boilerplate as same file dependencies or
+task dependencies are used across different tasks. As the tasks are
+defined in ``Python`` code, in a file called ``dodo.py``, there is an
+infinite amount of possibilities to reduce this boilerplate and increase
+task definition reuse. This package is an attempt at creating a
+composeable functional framework for creation of ``doit`` easily
+reusable task definitions that are then compiled to dictionaries that
+are usable by ``doit`` for task definition.
+
 Running tests
 -------------
 
@@ -60,95 +78,12 @@ Development
 Development dependencies for ``doit_ext`` include:
 
 -  ``poetry``
-
-   -  Used to handle Python package dependencies.
-
-   .. code:: bash
-
-      # Use poetry run to execute poetry installed cli tools such as invoke,
-      # nox and pytest.
-      poetry run <cmd>
-
-
 -  ``doit``
-
-   -  A general task executor that is a replacement for a ``Makefile``
-   -  Understands task dependencies and can run tasks in parallel
-      even while running them in the order determined from dependencies
-      between tasks. E.g. requirements.txt is a requirement for running
-      tests and therefore the task creating requirements.txt will always
-      run before the test task.
-
-   .. code:: bash
-
-      # Tasks are defined in dodo.py
-      # To list doit tasks from command line
-      poetry run doit list
-      # To run all tasks in parallel (recommended before pushing and/or
-      # committing)
-      # 8 is the number of cpu cores, change as wanted
-      # -v 0 sets verbosity to very low. (Errors will always still be printed.)
-      poetry run doit -n 8 -v 0
-
 -  ``nox``
-
-   -  ``nox`` is a replacement for ``tox``. Both are made to create
-      reproducible Python environments for testing, making docs locally, etc.
-
-   .. code:: bash
-
-      # To list available nox sessions
-      # Sessions are defined in noxfile.py
-      poetry run nox --list
-
 -  ``copier``
-
-   -  ``copier`` is a project templater. Many Python projects follow a similar
-      framework for testing, creating documentations and overall placement of
-      files and configuration. ``copier`` allows creating a template project
-      (e.g. https://github.com/nialov/nialov-py-template) which can be firstly
-      cloned as the framework for your own package and secondly to pull updates
-      from the template to your already started project.
-
-   .. code:: bash
-
-      # To pull copier update from github/nialov/nialov-py-template
-      poetry run copier update
-
-
 -  ``pytest``
-
-   -  ``pytest`` is a Python test runner. It is used to run defined tests to
-      check that the package executes as expected. The defined tests in
-      ``./tests`` contain many regression tests (done with
-      ``pytest-regressions``) that make it almost impossible
-      to add features to ``doit_ext`` that changes the results of functions
-      and methods.
-
-   .. code:: bash
-
-      # To run tests implemented in ./tests directory and as doctests
-      # within project itself:
-      poetry run pytest
-
-
 -  ``coverage``
-
-   .. code:: bash
-
-      # To check coverage of tests
-      # (Implemented as nox session!)
-      poetry run nox --session test_pip
-
 -  ``sphinx``
-
-   -  Creates documentation from files in ``./docs_src``.
-
-   .. code:: bash
-
-      # To create documentation
-      # (Implemented as nox session!)
-      poetry run nox --session docs
 
 Big thanks to all maintainers of the above packages!
 
