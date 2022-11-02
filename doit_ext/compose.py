@@ -11,6 +11,60 @@ FuncType = Union[Callable, str]
 StrPathType = Union[Path, str]
 
 
+class FileDep(NamedTuple):
+    """
+    File dependency.
+    """
+
+    value: StrPathType
+
+
+class Target(NamedTuple):
+    """
+    Target.
+    """
+
+    value: StrPathType
+
+
+class Action(NamedTuple):
+    """
+    Action.
+    """
+
+    base: str
+    parameters: Tuple[Union[FileDep, Target, Any], ...] = ()
+
+    def validate(self):
+        """
+        Validate inputs.
+        """
+        assert isinstance(self.base, str)
+        if not self.base.count("{}") == len(self.parameters):
+            raise ValueError(
+                "Expected base to have {} format spots for every parameter."
+            )
+
+    def compile(self) -> str:
+        """
+        Compile into action string.
+        """
+        self.validate()
+        return (
+            self.base
+            if len(self.parameters) == 0
+            else self.base.format(
+                *[
+                    param if not isinstance(param, (FileDep, Target)) else param.value
+                    for param in self.parameters
+                ]
+            )
+        )
+
+
+ActionsType = Union[Action, FuncType]
+
+
 def _resolve_task_dep(task_dep: FuncType) -> str:
     """
     Resolve task dependency to doit task name.
@@ -75,7 +129,7 @@ class ComposeTask(NamedTuple):
     Composeable task definition.
     """
 
-    actions: Tuple[FuncType, ...] = ()
+    actions: Tuple[Union[FuncType, Action], ...] = ()
     file_dep: Tuple[StrPathType, ...] = ()
     task_dep: Tuple[FuncType, ...] = ()
     targets: Tuple[StrPathType, ...] = ()
@@ -118,6 +172,34 @@ class ComposeTask(NamedTuple):
                     *new_values
                 )
                 continue
+            if key == "actions":
+                assert isinstance(new_values, tuple)
+                compiled_actions = []
+                for action in new_values:
+                    if not isinstance(action, Action):
+                        compiled_actions.append(action)
+                    elif isinstance(action, Action):
+                        compiled_action = action.compile()
+                        compiled_actions.append(compiled_action)
+                        file_deps = [
+                            param.value
+                            for param in action.parameters
+                            if isinstance(param, FileDep)
+                        ]
+                        targets = [
+                            param.value
+                            for param in action.parameters
+                            if isinstance(param, Target)
+                        ]
+                        old_values_dict["file_dep"] = tuple(
+                            [*old_values_dict["file_dep"], *file_deps]
+                        )
+                        old_values_dict["targets"] = tuple(
+                            [*old_values_dict["targets"], *targets]
+                        )
+                old_values_dict[key] = tuple([*old_values_dict[key], *compiled_actions])
+                continue
+
             if key not in old_values_dict:
                 raise KeyError(f"Expected {key} to be a field of {self.__class__}.")
 
@@ -136,7 +218,7 @@ class ComposeTask(NamedTuple):
                 raise TypeError(f"Unexpected attr type: {type(attr)}.")
         return ComposeTask(**old_values_dict)
 
-    def add_actions(self, *actions: FuncType) -> "ComposeTask":
+    def add_actions(self, *actions: ActionsType) -> "ComposeTask":
         """
         Add actions to task.
         """
