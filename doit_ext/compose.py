@@ -199,6 +199,13 @@ class ComposeTask(NamedTuple):
                         old_values_dict["targets"] = tuple(
                             [*old_values_dict["targets"], *targets]
                         )
+
+                        # Make task depend on the base action string
+                        old_values_dict[
+                            "uptodate"
+                        ] = self.uptodate.update_config_changed(
+                            config={action.base: action.base}
+                        )
                 old_values_dict[key] = tuple([*old_values_dict[key], *compiled_actions])
                 continue
 
@@ -206,7 +213,7 @@ class ComposeTask(NamedTuple):
                 raise KeyError(f"Expected {key} to be a field of {self.__class__}.")
 
             attr = old_values_dict[key]
-            if isinstance(attr, Tuple):
+            if isinstance(attr, tuple):
                 # Add values to current values
                 old_values_dict[key] = tuple([*old_values_dict[key], *new_values])
             elif isinstance(attr, str):
