@@ -9,6 +9,7 @@ import pytest
 from doit.task import Task, dict_to_task
 from doit.tools import config_changed, result_dep
 
+import tests
 from doit_ext import compose
 
 
@@ -70,7 +71,7 @@ def test_uptodate(result_deps, config_changed):
         assert config_updated_result.config_changed[key] == values
 
 
-def test_composetask():
+def test_composetask(data_regression):
     """
     Test ComposeTask.
     """
@@ -82,6 +83,7 @@ def test_composetask():
     target_csv_path = Path("target.csv")
     base_cmd = "python script.py {} {} {}"
     option_param = "--csv"
+    new_name = "new_name"
     file_dep_param = compose.FileDep(pyproject_toml_path)
     target_param = compose.Target(target_csv_path)
     compose_task = (
@@ -98,6 +100,7 @@ def test_composetask():
                 parameters=(option_param, file_dep_param, target_param),
             )
         )
+        .add_name(new_name)
     )
 
     compiled_compose_task = compose_task.compile()
@@ -121,8 +124,17 @@ def test_composetask():
 
         if key == "uptodate":
             assert all(isinstance(val, (config_changed, result_dep)) for val in values)
+        if key == "name":
+            assert isinstance(values, str)
+            assert values == new_name
 
     assert isinstance(dict_to_task(compiled_compose_task), Task)
+
+    compiled_compose_task_regression = {
+        key: tests.normalize_value_for_regression(value)
+        for key, value in compiled_compose_task.items()
+    }
+    data_regression.check(compiled_compose_task_regression)
 
 
 @pytest.mark.parametrize(

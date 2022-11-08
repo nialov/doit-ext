@@ -3,6 +3,7 @@ Tests for doit_ext.
 """
 
 from pathlib import Path
+from typing import Any, Callable, List
 
 TESTS_PATH = Path(__file__).parent
 SAMPLE_PROJECT_WITH_PYTHON_FILES = (
@@ -22,3 +23,26 @@ SAMPLE_PROJECT_FILE_PATHS = (
         NON_EXISTING_PATH,
     ],
 )
+
+
+def normalize_value_for_regression(value: Any):
+    """
+    Normalize doit dict values for regression testing.
+    """
+    if isinstance(value, str):
+        return value
+    elif isinstance(value, tuple):
+        new_value: List[str] = []
+        for val in value:
+            if isinstance(val, str):
+                new_value.append(val)
+            elif isinstance(val, Path):
+                new_value.append(val.as_posix())
+            elif isinstance(val, Callable):
+                new_value.append(str(val.__class__))
+
+            else:
+                raise ValueError(f"Unhandled value of type: {type(val)}")
+        return tuple(new_value)
+    else:
+        raise ValueError(f"Unhandled value of type: {type(value)}")
