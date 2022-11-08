@@ -57,6 +57,7 @@ nox = "*"
 pre-commit = "*"
 pytest = "*"
 toml = "*"
+pytest-regressions = "^2.4.1"
 
 [tool.poetry.extras]
 coverage = ["coverage", "coverage-badge"]

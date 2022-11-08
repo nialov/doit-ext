@@ -1264,6 +1264,36 @@ tomli = ">=1.0.0"
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-datadir"
+version = "1.4.1"
+description = "pytest plugin for test data directories and files"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pytest = ">=5.0"
+
+[[package]]
+name = "pytest-regressions"
+version = "2.4.1"
+description = "Easy to use fixtures to write regression tests."
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+pytest = ">=6.2.0"
+pytest-datadir = ">=1.2.0"
+pyyaml = "*"
+
+[package.extras]
+dataframe = ["numpy", "pandas"]
+dev = ["matplotlib", "mypy", "numpy", "pandas", "pillow", "pre-commit", "restructuredtext-lint", "tox"]
+image = ["pillow", "numpy"]
+num = ["numpy", "pandas"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -1819,7 +1849,7 @@ typecheck = ["mypy"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "67ee19bce76591f3d7d8530734b7858777b75f864fbd68722def22d459e0318c"
+content-hash = "a9ca307bc823c073309b2e2117fec2d009288fd15f6e353e793367cfb6a72acf"
 
 [metadata.files]
 alabaster = []
@@ -1934,6 +1964,14 @@ pylint = []
 pyparsing = []
 pyrsistent = []
 pytest = []
+pytest-datadir = [
+    {file = "pytest-datadir-1.4.1.tar.gz", hash = "sha256:9f7a3c4def6ac4cac3cc8181139ab53bd2667231052bd40cb07081748d4420f0"},
+    {file = "pytest_datadir-1.4.1-py3-none-any.whl", hash = "sha256:095f441782b1b907587eca7227fdbae94be43f1c96b4b2cbcc6801a4645be1af"},
+]
+pytest-regressions = [
+    {file = "pytest-regressions-2.4.1.tar.gz", hash = "sha256:264d23e8132deeb57441cf466b7b5db445797f346e72b672c95b7f52a47bf01b"},
+    {file = "pytest_regressions-2.4.1-py3-none-any.whl", hash = "sha256:11c7cab5f431d1b21d0e351d0828b988c7f3e6b11e4ad6b61a8eae001873b56e"},
+]
 python-dateutil = []
 pytz = []
 pywin32 = []
