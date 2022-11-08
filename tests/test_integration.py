@@ -44,9 +44,9 @@ def task_main():
 
     print(dodo_py_contents)
 
-    check_call(["doit", "list"])
-    check_call(["doit", "help"])
-    check_call(["doit"])
+    check_call(["python", "-m", "doit", "list"])
+    check_call(["python", "-m", "doit", "help"])
+    check_call(["python", "-m", "doit"])
 
     tmp_path_tmp_dir = tmp_path / "tmp"
     tmp_path_tmp2_dir = tmp_path / "tmp2"
