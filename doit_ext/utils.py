@@ -1,10 +1,10 @@
 """
 General utilities.
 """
-from typing import Any, Tuple
+from typing import Any
 
 
-def command(*parts: Tuple[Any]) -> str:
+def command(*parts: Any) -> str:
     """
     Compile command-line command from parts.
     """
