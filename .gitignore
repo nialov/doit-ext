@@ -11,6 +11,7 @@ dev/
 .esri.gz
 *.html
 *.pickle
+result
 
 # We do not want to include requirements.txt
 # It is merely for backwards compatible pip installs
