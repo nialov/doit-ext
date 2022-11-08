@@ -18,13 +18,13 @@ keywords = [
 ]
 # See https://pypi.org/classifiers/
 classifiers = [
-    "Topic :: Scientific/Engineering :: GIS",
     "Environment :: Plugins"
 ]
 include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+doit = {extras = ["toml"], version = "^0.36.0"}
 
 # Extras
 # Coverage
@@ -46,7 +46,6 @@ markupsafe = {version = "*", optional = true}
 
 # Typecheck
 mypy = {version = "*", optional = true}
-doit = {extras = ["toml"], version = "^0.36.0"}
 
 [tool.poetry.dev-dependencies]
 # TODO: copier could be installed outside the poetry environment
