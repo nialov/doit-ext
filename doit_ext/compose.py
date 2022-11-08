@@ -150,6 +150,8 @@ class ComposeTask(NamedTuple):
                     ...,
                 ],
                 Dict[str, Any],
+                str,
+                ActionsType,
             ],
         ],
     ) -> "ComposeTask":
@@ -262,6 +264,12 @@ class ComposeTask(NamedTuple):
         See: https://pydoit.org/uptodate.html#config-changed
         """
         return self.update(dict(config_changed=config_deps))
+
+    def add_name(self, name: str) -> "ComposeTask":
+        """
+        Add a name overwriting any existing.
+        """
+        return self.update(dict(name=name))
 
         # current_config_changed = (
         #     self.uptodate._config_changed.copy()
