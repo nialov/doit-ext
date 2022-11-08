@@ -103,6 +103,10 @@ def test_composetask(data_regression):
         .add_name(new_name)
     )
 
+    assert compose_task.uptodate.config_changed is not None
+    assert base_cmd in compose_task.uptodate.config_changed
+    assert base_cmd in compose_task.uptodate.config_changed.values()
+
     compiled_compose_task = compose_task.compile()
 
     assert isinstance(compiled_compose_task, dict)
@@ -128,6 +132,7 @@ def test_composetask(data_regression):
             assert isinstance(values, str)
             assert values == new_name
 
+    # Test with doit task parsing to make sure the result is acceptable by doit
     assert isinstance(dict_to_task(compiled_compose_task), Task)
 
     compiled_compose_task_regression = {
