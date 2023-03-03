@@ -2,7 +2,7 @@
 Path utilities.
 """
 
-from hashlib import md5
+from hashlib import sha256
 from pathlib import Path
 from pickle import dumps
 from typing import Dict, List
@@ -32,7 +32,7 @@ def hash_path_contents(path: Path) -> bytes:
     contents = path.read_bytes()
     if len(contents) == 0:
         return b""
-    hashed = md5(contents, usedforsecurity=False).digest()
+    hashed = sha256(contents).digest()
     return hashed
 
 
@@ -42,4 +42,4 @@ def create_path_content_hash(file_paths: List[Path]) -> str:
     """
     hashed = create_path_content_dict(file_paths=file_paths)
     hashed_json = dumps(hashed)
-    return md5(hashed_json, usedforsecurity=False).hexdigest()
+    return sha256(hashed_json).hexdigest()
