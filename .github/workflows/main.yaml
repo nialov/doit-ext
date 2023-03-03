@@ -20,8 +20,8 @@ on:
   pull_request:
     branches: [master]
   # also run periodically
-  schedule:
-    - cron: "41 7 * * 5"
+  # schedule:
+  #   - cron: "41 7 * * 5"
 
 jobs:
   pytest-with-coverage:
