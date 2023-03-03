@@ -23,8 +23,8 @@ classifiers = [
 include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-doit = {extras = ["toml"], version = "^0.36.0"}
+python = ">=3.8,<3.11"
+doit = {extras = ["toml"], version = ">=0.36.0"}
 
 # Extras
 # Coverage
@@ -48,7 +48,6 @@ markupsafe = {version = "*", optional = true}
 mypy = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
-doit = "*"
 ipython = "*"
 jupyterlab = "*"
 nox = "*"
@@ -56,9 +55,9 @@ pre-commit = "*"
 pyinstrument = "*"
 pytest = "*"
 toml = "*"
-pytest-regressions = "^2.4.1"
-coverage = "^6.5.0"
-codespell = "^2.2.2"
+pytest-regressions = "*"
+coverage = "*"
+codespell = "*"
 
 [tool.poetry.extras]
 coverage = ["coverage", "coverage-badge"]
