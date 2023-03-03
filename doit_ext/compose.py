@@ -3,7 +3,7 @@ Compose doit tasks.
 """
 
 from pathlib import Path
-from typing import Any, Callable, Dict, NamedTuple, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union
 
 from doit.tools import config_changed, result_dep
 
@@ -50,16 +50,38 @@ class Action(NamedTuple):
         Compile into action string.
         """
         self.validate()
-        return (
-            self.base
-            if len(self.parameters) == 0
-            else self.base.format(
+        if len(self.parameters) == 0:
+            return self.base
+        else:
+            return self.base.format(
                 *[
                     param if not isinstance(param, (FileDep, Target)) else param.value
                     for param in self.parameters
                 ]
             )
-        )
+
+    def file_deps(self) -> List[StrPathType]:
+        """
+        Get file dependencies.
+        """
+        file_deps = [
+            param.value for param in self.parameters if isinstance(param, FileDep)
+        ]
+        return file_deps
+
+    def targets(self) -> List[StrPathType]:
+        """
+        Get targets dependencies.
+        """
+        targets = [
+            param.value for param in self.parameters if isinstance(param, Target)
+        ]
+        return targets
+
+        # return (
+        #     self.base
+        #     else
+        # )
 
 
 ActionsType = Union[Action, FuncType]
@@ -181,17 +203,15 @@ class ComposeTask(NamedTuple):
                         compiled_actions.append(action)
                     elif isinstance(action, Action):
                         compiled_action = action.compile()
-                        compiled_actions.append(compiled_action)
-                        file_deps = [
-                            param.value
-                            for param in action.parameters
-                            if isinstance(param, FileDep)
-                        ]
-                        targets = [
-                            param.value
-                            for param in action.parameters
-                            if isinstance(param, Target)
-                        ]
+                        if compiled_action not in compiled_actions:
+                            compiled_actions.append(compiled_action)
+                        # file_deps = [
+                        #     param.value
+                        #     for param in action.parameters
+                        #     if isinstance(param, FileDep)
+                        # ]
+                        file_deps = action.file_deps()
+                        targets = action.targets()
                         old_values_dict["file_dep"] = tuple(
                             [*old_values_dict["file_dep"], *file_deps]
                         )
@@ -214,7 +234,7 @@ class ComposeTask(NamedTuple):
             attr = old_values_dict[key]
             if isinstance(attr, tuple):
                 # Add values to current values
-                old_values_dict[key] = tuple([*old_values_dict[key], *new_values])
+                old_values_dict[key] = tuple([*attr, *new_values])
             elif isinstance(attr, str):
                 # Overwrite current value
                 old_values_dict[key] = new_values
