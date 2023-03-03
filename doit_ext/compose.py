@@ -160,7 +160,6 @@ class ComposeTask(NamedTuple):
         """
         old_values_dict = _resolve_named_tuple_dict(self)
         for key, new_values in update_values.items():
-
             if key == "config_changed":
                 assert isinstance(new_values, dict)
                 old_values_dict["uptodate"] = self.uptodate.update_config_changed(
