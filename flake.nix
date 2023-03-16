@@ -191,7 +191,8 @@
             buildPythonPackage pytestCheckHook poetry-core pytest-regressions;
           inherit (pkgs) poetry2nix;
         });
-        packages.default = self.packages.doit-ext;
+        checks = { inherit (self.packages."${system}") doit-ext; };
+        packages.default = self.packages."${system}".doit-ext;
         devShells = devShellsWithDefault;
       });
 }
