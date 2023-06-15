@@ -186,11 +186,12 @@
         checks = { inherit wrappedPoetryCheck copierCheck; };
         packages.poetry-wrapped = wrappedPoetry;
         packages.copier = wrappedCopier;
-        packages.doit-ext = pkgs.callPackage ./. (with pkgs; {
-          inherit (python3.pkgs)
-            buildPythonPackage pytestCheckHook poetry-core pytest-regressions;
-          inherit (pkgs) poetry2nix;
-        });
+        packages.doit-ext = pkgs.python3.pkgs.callPackage ./. { };
+        # (with pkgs; {
+        # inherit (python3.pkgs)
+        #   buildPythonPackage pytestCheckHook poetry-core pytest-regressions;
+        # inherit (pkgs) poetry2nix;
+        # });
         checks = { inherit (self.packages."${system}") doit-ext; };
         packages.default = self.packages."${system}".doit-ext;
         devShells = devShellsWithDefault;
