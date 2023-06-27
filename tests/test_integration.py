@@ -2,13 +2,34 @@
 Integration tests for doit-ext.
 """
 from pathlib import Path
-from subprocess import check_call
+
+# from subprocess import check_call
 from textwrap import dedent
 
 import pytest
+from doit.doit_cmd import DoitMain
 
 
-def test_doit_ext_integration(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def _check_dirs(tmp_path):
+    tmp_path_tmp_dir = tmp_path / "tmp"
+    tmp_path_tmp2_dir = tmp_path / "tmp2"
+
+    for tmp_dir in (tmp_path_tmp_dir, tmp_path_tmp2_dir):
+        assert tmp_dir.exists()
+        assert tmp_dir.is_dir()
+
+
+def _no_check(tmp_path):
+    return
+
+
+@pytest.mark.parametrize(
+    "cmds,assert_function",
+    [[["list"], _no_check], [["help"], _no_check], [[], _check_dirs]],
+)
+def test_doit_ext_integration(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cmds: list[str], assert_function
+):
     """
     Test doit-ext functionality fully.
     """
@@ -44,13 +65,6 @@ def task_main():
 
     print(dodo_py_contents)
 
-    check_call(["python", "-m", "doit", "list"])
-    check_call(["python", "-m", "doit", "help"])
-    check_call(["python", "-m", "doit"])
-
-    tmp_path_tmp_dir = tmp_path / "tmp"
-    tmp_path_tmp2_dir = tmp_path / "tmp2"
-
-    for tmp_dir in (tmp_path_tmp_dir, tmp_path_tmp2_dir):
-        assert tmp_dir.exists()
-        assert tmp_dir.is_dir()
+    result = DoitMain().run(cmds)
+    assert result == 0
+    assert_function(tmp_path=tmp_path)
