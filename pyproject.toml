@@ -26,56 +26,14 @@ include = ["CHANGELOG.md"]
 python = ">=3.8,<3.11"
 doit = {extras = ["toml"], version = ">=0.36.0"}
 
-# Extras
-# Coverage
-coverage = {version = "*", optional = true}
-coverage-badge = {version = "*", optional = true}
-
-# Docs
-sphinx = {version = "*", optional = true}
-sphinx-rtd-theme = {version = "*", optional = true}
-nbsphinx = {version = "*", optional = true}
-sphinx-gallery = {version = "*", optional = true}
-sphinx-autodoc-typehints = {version = "*", optional = true}
-sphinx-autobuild = {version = "*", optional = true}
-
-# Linting
-pylint = {version = "*", optional = true}
-rstcheck = {version = "*", optional = true}
-markupsafe = {version = "*", optional = true}
-
-# Typecheck
-mypy = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 ipython = "*"
-jupyterlab = "*"
-nox = "*"
-pre-commit = "*"
-pyinstrument = "*"
 pytest = "*"
 toml = "*"
 pytest-regressions = "*"
-coverage = "*"
-codespell = "*"
 
 [tool.poetry.extras]
-coverage = ["coverage", "coverage-badge"]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "nbsphinx",
-    "sphinx-gallery",
-    "sphinx-autodoc-typehints",
-    "sphinx-autobuild"
-]
-lint = [
-    "pylint",
-    "rstcheck",
-    "sphinx",
-    "markupsafe",
-]
-typecheck = ["mypy"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
