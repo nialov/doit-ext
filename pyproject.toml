@@ -23,7 +23,7 @@ classifiers = [
 include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.12"
 doit = {extras = ["toml"], version = ">=0.36.0"}
 
 

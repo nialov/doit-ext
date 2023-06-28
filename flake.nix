@@ -20,7 +20,14 @@
           overlays = [ self.overlays.default ];
         };
 
-        devShellPackages = with pkgs; [ pre-commit pandoc poetry ];
+        devShellPackages = with pkgs; [
+          pre-commit
+          pandoc
+          poetry-with-c-tooling
+          python39
+          python310
+          python311
+        ];
 
       in {
         checks = {
@@ -62,6 +69,41 @@
               poetry version "$version"
             '';
           };
+          poetry-test-python = pkgs.writeShellApplication {
+            name = "poetry-test-python";
+            runtimeInputs =
+              self.devShells."${system}".default.nativeBuildInputs;
+            text = ''
+              poetry check
+              poetry env use "$1"
+              poetry lock --check
+              poetry install
+              poetry run pytest
+            '';
+
+          };
+          poetry-with-c-tooling = pkgs.symlinkJoin {
+            name = "poetry-with-c-tooling";
+            buildInputs = with pkgs; [ makeWrapper ];
+            paths = with pkgs; [ poetry ];
+            postBuild = let
+
+              caBundle = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+              ccLib = "${pkgs.stdenv.cc.cc.lib}/lib";
+              zlibLib = "${pkgs.zlib}/lib";
+              ldPath = "${ccLib}:${zlibLib}";
+              wraps = [
+                "--set GIT_SSL_CAINFO ${caBundle}"
+                "--set SSL_CERT_FILE ${caBundle}"
+                "--set CURL_CA_BUNDLE ${caBundle}"
+                "--set LD_LIBRARY_PATH ${ldPath}"
+              ];
+
+            in ''
+              wrapProgram $out/bin/poetry ${builtins.concatStringsSep " " wraps}
+              $out/bin/poetry --help
+            '';
+          };
         };
         devShells = {
           default = pkgs.mkShell {
@@ -74,6 +116,9 @@
           update-project = inputs.flake-utils.lib.mkApp {
             drv = self.packages."${system}".update-project;
           };
+          poetry-test-pythons = inputs.flake-utils.lib.mkApp {
+            drv = self.packages."${system}".poetry-test-pythons;
+          };
         };
       }) // {
         overlays.default = _: prev: {
@@ -82,6 +127,7 @@
               doit-ext = python-final.callPackage ./default.nix { };
             })
           ];
+          inherit (self.packages."${prev.system}") poetry-with-c-tooling;
         };
       };
 
