@@ -5,6 +5,7 @@ from pathlib import Path
 
 # from subprocess import check_call
 from textwrap import dedent
+from typing import List
 
 import pytest
 from doit.doit_cmd import DoitMain
@@ -28,7 +29,7 @@ def _no_check(tmp_path):
     [[["list"], _no_check], [["help"], _no_check], [[], _check_dirs]],
 )
 def test_doit_ext_integration(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cmds: list[str], assert_function
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cmds: List[str], assert_function
 ):
     """
     Test doit-ext functionality fully.
