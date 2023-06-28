@@ -32,6 +32,8 @@ ipython = "*"
 pytest = "*"
 toml = "*"
 pytest-regressions = "*"
+mypy = "*"
+pylint = "*"
 
 [tool.poetry.extras]
 
