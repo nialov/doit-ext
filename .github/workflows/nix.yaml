@@ -2,19 +2,6 @@ name: nix
 
 on:
   push:
-    paths:
-      - "**.py"
-      - "**.rst"
-      - "**.nix"
-      - "**.lock"
-      - "pyproject.toml"
-      - "poetry.lock"
-      - ".pre-commit-config.yaml"
-      - ".github/workflows/*.yaml"
-      # Ignore small changes to documentation files
-      # (ReadTheDocs will build based on new README anyway.)
-      - "!README.rst"
-      - "!CHANGELOG.md"
     branches: [master]
   pull_request:
 
@@ -30,12 +17,13 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v2
       - name: Run the magic nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v1
+        uses: DeterminateSystems/magic-nix-cache-action@v2
       - name: Check with nix
         run: |
           nix flake check
       - name: Build package with poetry
         run: |
+          nix develop -c poetry check
           nix develop -c poetry build
       - name: Check that version in pyproject.toml is equivalent to tag
         if: >
