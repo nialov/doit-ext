@@ -55,6 +55,14 @@
             ${sphinxEnv}/bin/sphinx-apidoc -o docs_src/apidoc -f doit_ext -e -f
             ${sphinxEnv}/bin/sphinx-build -b html docs_src/ $out
           '';
+          update-project = pkgs.writeShellApplication {
+            name = "update-project";
+            runtimeInputs = with pkgs; [ poetry git coreutils ];
+            text = ''
+              version="$(git tag --sort=-creatordate | head -n 1 | sed 's/v\(.*\)/\1/')"
+              poetry version "$version"
+            '';
+          };
         };
         devShells = {
           default = pkgs.mkShell {
@@ -62,6 +70,11 @@
             inherit (self.checks.${system}.preCommitCheck) shellHook;
           };
           poetry = self.packages."${system}".poetryEnv.env;
+        };
+        apps = {
+          update-project = inputs.flake-utils.lib.mkApp {
+            drv = self.packages."${system}".update-project;
+          };
         };
       }) // {
         overlays.default = _: prev: {
