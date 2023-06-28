@@ -24,10 +24,9 @@
 
       in {
         checks = {
-          inherit (self.packages."${system}") doit-ext doit-ext-docs;
+          inherit (self.packages."${system}") doit-ext;
           preCommitCheck = inputs.pre-commit-hooks.lib.${system}.run
             (import ././pre-commit.nix { inherit pkgs; });
-
         };
         packages = {
           default = self.packages."${system}".doit-ext;
