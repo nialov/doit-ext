@@ -21,4 +21,4 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v2
       - name: Test with poetry on Python ${{ matrix.python-version }}
         run: |
-          nix run .#poetry-test-python -- ${{ matrix.python-version }}
+          nix run .#poetry-run -- ${{ matrix.python-version }} pytest

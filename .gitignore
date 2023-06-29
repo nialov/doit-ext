@@ -166,3 +166,4 @@ cython_debug/
 .envrc
 .pre-commit-cache/
 /build
+/.pre-commit-config.yaml

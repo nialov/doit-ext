@@ -3,6 +3,10 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    nix-extra = {
+      url = "github:nialov/nix-extra";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
     pre-commit-hooks = { url = "github:cachix/pre-commit-hooks.nix"; };
   };
@@ -13,7 +17,8 @@
         # Initialize nixpkgs for system
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ self.overlays.default ];
+          overlays =
+            [ self.overlays.default inputs.nix-extra.overlays.default ];
         };
 
         devShellPackages = with pkgs; [
@@ -60,46 +65,54 @@
           '';
           sync-git-tag-with-poetry = pkgs.writeShellApplication {
             name = "sync-git-tag-with-poetry";
-            runtimeInputs = with pkgs; [ poetry git coreutils ];
+            runtimeInputs = with pkgs; [ poetry git coreutils gnused ];
             text = ''
               version="$(git tag --sort=-creatordate | head -n 1 | sed 's/v\(.*\)/\1/')"
               poetry version "$version"
             '';
           };
-          poetry-test-python = pkgs.writeShellApplication {
-            name = "poetry-test-python";
+          update-changelog = pkgs.writeShellApplication {
+            name = "update-changelog";
+            runtimeInputs = with pkgs; [
+              clog-cli
+              ripgrep
+              git
+              gnused
+              coreutils
+            ];
+            text = ''
+              homepage="$(rg 'homepage =' pyproject.toml | sed 's/.*"\(.*\)"/\1/')"
+              version="$(git tag --sort=-creatordate | head -n 1 | sed 's/v\(.*\)/\1/')"
+              clog --repository "$homepage" --subtitle "Release Changelog $version" "$@"
+            '';
+          };
+          pre-release = pkgs.writeShellApplication {
+            name = "pre-release";
+            runtimeInputs = [
+              self.packages."${system}".update-changelog
+              self.packages."${system}".sync-git-tag-with-poetry
+
+            ];
+            text = ''
+              sync-git-tag-with-poetry
+              update-changelog --changelog CHANGELOG.md
+            '';
+
+          };
+          poetry-run = pkgs.writeShellApplication {
+            name = "poetry-run";
             runtimeInputs =
               self.devShells."${system}".default.nativeBuildInputs;
             text = ''
               poetry check
               poetry env use "$1"
+              shift
+              poetry env info
               poetry lock --check
               poetry install
-              poetry run pytest
+              poetry run "$@"
             '';
 
-          };
-          poetry-with-c-tooling = pkgs.symlinkJoin {
-            name = "poetry-with-c-tooling";
-            buildInputs = with pkgs; [ makeWrapper ];
-            paths = with pkgs; [ poetry ];
-            postBuild = let
-
-              caBundle = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-              ccLib = "${pkgs.stdenv.cc.cc.lib}/lib";
-              zlibLib = "${pkgs.zlib}/lib";
-              ldPath = "${ccLib}:${zlibLib}";
-              wraps = [
-                "--set GIT_SSL_CAINFO ${caBundle}"
-                "--set SSL_CERT_FILE ${caBundle}"
-                "--set CURL_CA_BUNDLE ${caBundle}"
-                "--set LD_LIBRARY_PATH ${ldPath}"
-              ];
-
-            in ''
-              wrapProgram $out/bin/poetry ${builtins.concatStringsSep " " wraps}
-              $out/bin/poetry --help
-            '';
           };
         };
         devShells = {
@@ -109,14 +122,6 @@
           };
           poetry = self.packages."${system}".poetryEnv.env;
         };
-        apps = {
-          sync-git-tag-with-poetry = inputs.flake-utils.lib.mkApp {
-            drv = self.packages."${system}".sync-git-tag-with-poetry;
-          };
-          poetry-test-pythons = inputs.flake-utils.lib.mkApp {
-            drv = self.packages."${system}".poetry-test-pythons;
-          };
-        };
       }) // {
         overlays.default = _: prev: {
           pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
@@ -124,7 +129,10 @@
               doit-ext = python-final.callPackage ./default.nix { };
             })
           ];
-          inherit (self.packages."${prev.system}") poetry-with-c-tooling;
+
+          inherit (self.packages."${prev.system}")
+            update-changelog sync-git-tag-with-poetry poetryEnv;
+
         };
       };
 
