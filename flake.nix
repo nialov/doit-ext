@@ -80,6 +80,7 @@
               git
               gnused
               coreutils
+              pandoc
             ];
             text = ''
               homepage="$(rg 'homepage =' pyproject.toml | sed 's/.*"\(.*\)"/\1/')"
@@ -92,11 +93,11 @@
             runtimeInputs = [
               self.packages."${system}".update-changelog
               self.packages."${system}".sync-git-tag-with-poetry
-
             ];
             text = ''
               sync-git-tag-with-poetry
               update-changelog --changelog CHANGELOG.md
+              pandoc CHANGELOG.md --from markdown --to markdown --output CHANGELOG.md
             '';
 
           };
