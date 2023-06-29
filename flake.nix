@@ -57,6 +57,7 @@
           in pkgs.runCommand "docs" { } ''
             tmpdir=$(mktemp -d)
             ln -s ${./doit_ext} $tmpdir/doit_ext
+            ln -s ${./README.rst} $tmpdir/README.rst
             cp -r ${./docs_src} $tmpdir/docs_src
             chmod -R 777 $tmpdir/docs_src
             cd $tmpdir
