@@ -3,10 +3,6 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
-    nixpkgs-copier.url =
-      "github:nialov/nixpkgs?rev=334c000bbbc51894a3b02e05375eae36ac03e137";
-    poetry2nix-copier.url =
-      "github:nialov/poetry2nix?rev=6711fdb5da87574d250218c20bcd808949db6da0";
     flake-utils.url = "github:numtide/flake-utils";
     pre-commit-hooks = { url = "github:cachix/pre-commit-hooks.nix"; };
   };
@@ -24,6 +20,7 @@
           pre-commit
           pandoc
           poetry-with-c-tooling
+          # Supported python versions
           python39
           python310
           python311
@@ -42,9 +39,9 @@
             editablePackageSources = { doit_ext = ./doit_ext; };
           };
           inherit (pkgs.python3Packages) doit-ext;
-          doit-ext-python =
+          doit-with-ext =
             pkgs.python3.withPackages (p: with p; [ doit-ext doit ]);
-          doit-ext-docs = let
+          docs = let
             sphinxEnv = pkgs.python3.withPackages (p:
               with p; [
                 doit-ext
@@ -52,7 +49,7 @@
                 sphinx-autodoc-typehints
                 sphinx-rtd-theme
               ]);
-          in pkgs.runCommand "doit-ext-docs" { } ''
+          in pkgs.runCommand "docs" { } ''
             tmpdir=$(mktemp -d)
             ln -s ${./doit_ext} $tmpdir/doit_ext
             cp -r ${./docs_src} $tmpdir/docs_src
@@ -61,8 +58,8 @@
             ${sphinxEnv}/bin/sphinx-apidoc -o docs_src/apidoc -f doit_ext -e -f
             ${sphinxEnv}/bin/sphinx-build -b html docs_src/ $out
           '';
-          update-project = pkgs.writeShellApplication {
-            name = "update-project";
+          sync-git-tag-with-poetry = pkgs.writeShellApplication {
+            name = "sync-git-tag-with-poetry";
             runtimeInputs = with pkgs; [ poetry git coreutils ];
             text = ''
               version="$(git tag --sort=-creatordate | head -n 1 | sed 's/v\(.*\)/\1/')"
@@ -113,8 +110,8 @@
           poetry = self.packages."${system}".poetryEnv.env;
         };
         apps = {
-          update-project = inputs.flake-utils.lib.mkApp {
-            drv = self.packages."${system}".update-project;
+          sync-git-tag-with-poetry = inputs.flake-utils.lib.mkApp {
+            drv = self.packages."${system}".sync-git-tag-with-poetry;
           };
           poetry-test-pythons = inputs.flake-utils.lib.mkApp {
             drv = self.packages."${system}".poetry-test-pythons;
