@@ -52,13 +52,12 @@ class Action(NamedTuple):
         self.validate()
         if len(self.parameters) == 0:
             return self.base
-        else:
-            return self.base.format(
-                *[
-                    param if not isinstance(param, (FileDep, Target)) else param.value
-                    for param in self.parameters
-                ]
-            )
+        return self.base.format(
+            *[
+                param if not isinstance(param, (FileDep, Target)) else param.value
+                for param in self.parameters
+            ]
+        )
 
     def file_deps(self) -> List[StrPathType]:
         """

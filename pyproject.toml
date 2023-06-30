@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "doit-ext"
-version = "0.0.0"
+version = "0.0.1"
 description = "Utilities for doit task specification."
 authors = ["nialov <nikolasovaskainen@gmail.com>"]
 readme = "README.rst"
@@ -23,59 +23,19 @@ classifiers = [
 include = ["CHANGELOG.md"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.12"
 doit = {extras = ["toml"], version = ">=0.36.0"}
 
-# Extras
-# Coverage
-coverage = {version = "*", optional = true}
-coverage-badge = {version = "*", optional = true}
-
-# Docs
-sphinx = {version = "*", optional = true}
-sphinx-rtd-theme = {version = "*", optional = true}
-nbsphinx = {version = "*", optional = true}
-sphinx-gallery = {version = "*", optional = true}
-sphinx-autodoc-typehints = {version = "*", optional = true}
-sphinx-autobuild = {version = "*", optional = true}
-
-# Linting
-pylint = {version = "*", optional = true}
-rstcheck = {version = "*", optional = true}
-markupsafe = {version = "*", optional = true}
-
-# Typecheck
-mypy = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 ipython = "*"
-jupyterlab = "*"
-nox = "*"
-pre-commit = "*"
-pyinstrument = "*"
 pytest = "*"
 toml = "*"
 pytest-regressions = "*"
-coverage = "*"
-codespell = "*"
+mypy = "*"
+pylint = "*"
 
 [tool.poetry.extras]
-coverage = ["coverage", "coverage-badge"]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "nbsphinx",
-    "sphinx-gallery",
-    "sphinx-autodoc-typehints",
-    "sphinx-autobuild"
-]
-lint = [
-    "pylint",
-    "rstcheck",
-    "sphinx",
-    "markupsafe",
-]
-typecheck = ["mypy"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

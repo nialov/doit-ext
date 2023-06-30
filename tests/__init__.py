@@ -38,7 +38,7 @@ def normalize_value_for_regression(value: Any):
                 new_value.append(val)
             elif isinstance(val, Path):
                 new_value.append(val.as_posix())
-            elif isinstance(val, Callable):
+            elif callable(val):
                 new_value.append(str(val.__class__))
 
             else:
