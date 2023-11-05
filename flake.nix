@@ -9,6 +9,10 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     pre-commit-hooks = { url = "github:cachix/pre-commit-hooks.nix"; };
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, flake-utils, ... }@inputs:
@@ -17,8 +21,11 @@
         # Initialize nixpkgs for system
         pkgs = import nixpkgs {
           inherit system;
-          overlays =
-            [ self.overlays.default inputs.nix-extra.overlays.default ];
+          overlays = [
+            self.overlays.default
+            inputs.nix-extra.overlays.default
+            inputs.poetry2nix.overlays.default
+          ];
         };
 
         devShellPackages = with pkgs; [
