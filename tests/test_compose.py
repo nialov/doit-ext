@@ -1,9 +1,9 @@
 """
 Test compose.py.
 """
+
 from contextlib import nullcontext as does_not_raise
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from doit.task import Task, dict_to_task
@@ -79,7 +79,7 @@ def test_composetask(data_regression):
     mkdir_cmd = "mkdir -p tmp"
     mkdir_cmd_2 = "mkdir -p tmp2"
     setup_py_path = Path("setup.py")
-    pyproject_toml_path = Path("pyproject.toml")
+    pyproject_toml_path = "pyproject.toml"
     target_csv_path = Path("target.csv")
     base_cmd = "python script.py {} {} {}"
     option_param = "--csv"
@@ -104,10 +104,14 @@ def test_composetask(data_regression):
     )
 
     assert compose_task.uptodate.config_changed is not None
-    assert base_cmd in compose_task.uptodate.config_changed
-    assert base_cmd in compose_task.uptodate.config_changed.values()
+
+    # Actions are not yet compiled so base_cmd should not yet be in config_changed
+    assert base_cmd not in compose_task.uptodate.config_changed, compose_task
+    assert base_cmd not in compose_task.uptodate.config_changed.values()
 
     compiled_compose_task = compose_task.compile()
+
+    assert base_cmd in compiled_compose_task["uptodate"][0].config
 
     assert isinstance(compiled_compose_task, dict)
 
@@ -135,6 +139,12 @@ def test_composetask(data_regression):
     # Test with doit task parsing to make sure the result is acceptable by doit
     assert isinstance(dict_to_task(compiled_compose_task), Task)
 
+    # Test that duplicate targets are removed
+    compose_task_with_duplicate_target = compose_task.add_targets(target_csv_path)
+    compiled = compose_task_with_duplicate_target.compile()
+    assert len(compiled["targets"]) == len(set(compiled["targets"]))
+
+    # Regression test
     compiled_compose_task_regression = {
         key: tests.normalize_value_for_regression(value)
         for key, value in compiled_compose_task.items()
