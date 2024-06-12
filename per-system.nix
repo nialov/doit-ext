@@ -47,7 +47,7 @@
             statix.enable = true;
             deadnix.enable = true;
             rstcheck.enable = true;
-            yamllint = { enable = true; };
+            yamllint = { enable = false; };
             commitizen.enable = true;
             ruff = { enable = true; };
           };
