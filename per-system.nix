@@ -55,7 +55,7 @@
         };
         packages = {
 
-          inherit (pkgs) doit-ext;
+          inherit (pkgs) doit-ext poetry-run;
           default = self'.packages.doit-ext;
 
         };
