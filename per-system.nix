@@ -27,7 +27,8 @@
         _module.args.pkgs = mkNixpkgs inputs.nixpkgs;
         devShells = {
           default = pkgs.mkShell {
-            buildInputs = lib.attrValues { };
+            buildInputs =
+              lib.attrValues { inherit (pkgs) poetry-with-c-tooling; };
             shellHook = config.pre-commit.installationScript + ''
               export PROJECT_DIR="$PWD"
             '';
@@ -55,7 +56,7 @@
         };
         packages = {
 
-          inherit (pkgs) doit-ext poetry-run;
+          inherit (pkgs) doit-ext poetry-run sync-git-tag-with-poetry;
           default = self'.packages.doit-ext;
 
         };
