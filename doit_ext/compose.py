@@ -194,38 +194,38 @@ class ComposeTask(NamedTuple):
                     *new_values
                 )
                 continue
-            if key == "actions":
-                assert isinstance(new_values, tuple)
-                compiled_actions = []
-                for action in new_values:
-                    if not isinstance(action, Action):
-                        compiled_actions.append(action)
-                    elif isinstance(action, Action):
-                        compiled_action = action.compile()
-                        if compiled_action not in compiled_actions:
-                            compiled_actions.append(compiled_action)
-                        # file_deps = [
-                        #     param.value
-                        #     for param in action.parameters
-                        #     if isinstance(param, FileDep)
-                        # ]
-                        file_deps = action.file_deps()
-                        targets = action.targets()
-                        old_values_dict["file_dep"] = tuple(
-                            [*old_values_dict["file_dep"], *file_deps]
-                        )
-                        old_values_dict["targets"] = tuple(
-                            [*old_values_dict["targets"], *targets]
-                        )
+            # if key == "actions":
+            #     assert isinstance(new_values, tuple)
+            #     compiled_actions = []
+            #     for action in new_values:
+            #         if not isinstance(action, Action):
+            #             compiled_actions.append(action)
+            #         elif isinstance(action, Action):
+            #             compiled_action = action.compile()
+            #             if compiled_action not in compiled_actions:
+            #                 compiled_actions.append(compiled_action)
+            #             # file_deps = [
+            #             #     param.value
+            #             #     for param in action.parameters
+            #             #     if isinstance(param, FileDep)
+            #             # ]
+            #             file_deps = action.file_deps()
+            #             targets = action.targets()
+            #             old_values_dict["file_dep"] = tuple(
+            #                 [*old_values_dict["file_dep"], *file_deps]
+            #             )
+            #             old_values_dict["targets"] = tuple(
+            #                 [*old_values_dict["targets"], *targets]
+            #             )
 
-                        # Make task depend on the base action string
-                        old_values_dict[
-                            "uptodate"
-                        ] = self.uptodate.update_config_changed(
-                            config={action.base: action.base}
-                        )
-                old_values_dict[key] = tuple([*old_values_dict[key], *compiled_actions])
-                continue
+            #             # Make task depend on the base action string
+            #             old_values_dict["uptodate"] = (
+            #                 self.uptodate.update_config_changed(
+            #                     config={action.base: action.base}
+            #                 )
+            #             )
+            #     old_values_dict[key] = tuple([*old_values_dict[key], *compiled_actions])
+            #     continue
 
             if key not in old_values_dict:
                 raise KeyError(f"Expected {key} to be a field of {self.__class__}.")
@@ -304,17 +304,48 @@ class ComposeTask(NamedTuple):
         # current_config_changed.update(config_deps)
         # return self.uptodate.update(dict(_config_changed=current_config_changed))
 
+    def compile_actions(self) -> "ComposeTask":
+        old_values_dict = _resolve_named_tuple_dict(self)
+        old_values_dict.pop("actions")
+        compiled_actions = []
+        for action in self.actions:
+            if not isinstance(action, Action):
+                compiled_actions.append(action)
+            else:
+                compiled_action = action.compile()
+                if compiled_action not in compiled_actions:
+                    compiled_actions.append(compiled_action)
+                file_deps = action.file_deps()
+                targets = action.targets()
+                old_values_dict["file_dep"] = tuple(
+                    [*old_values_dict["file_dep"], *file_deps]
+                )
+                old_values_dict["targets"] = tuple(
+                    [*old_values_dict["targets"], *targets]
+                )
+
+                # Make task depend on the base action string
+                old_values_dict["uptodate"] = self.uptodate.update_config_changed(
+                    config={action.base: action.base}
+                )
+        old_values_dict["actions"] = tuple(compiled_actions)
+        return ComposeTask(**old_values_dict)
+
     def compile(self) -> Dict[str, Any]:
         """
         Compile into doit task dictionary definition.
         """
-        resolved = _resolve_named_tuple_dict(self)
-        resolved["uptodate"] = self.uptodate.compile()
+        actions_composed = self.compile_actions()
+        resolved = _resolve_named_tuple_dict(actions_composed)
+        resolved["uptodate"] = actions_composed.uptodate.compile()
 
-        # Remove dictionary keys with empty tuples as values
         cleaned_resolved = resolved.copy()
         for key, items in resolved.items():
+            # Remove dictionary keys with empty tuples as values
             if items is None or len(items) == 0:
                 cleaned_resolved.pop(key)
+            # Remove duplicate file deps and targets
+            if key in ("file_deps", "targets"):
+                cleaned_resolved[key] = tuple(set(items))
 
         return cleaned_resolved
