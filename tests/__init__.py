@@ -3,7 +3,7 @@ Tests for doit_ext.
 """
 
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any, List
 
 TESTS_PATH = Path(__file__).parent
 SAMPLE_PROJECT_WITH_PYTHON_FILES = (

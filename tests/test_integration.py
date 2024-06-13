@@ -1,6 +1,7 @@
 """
 Integration tests for doit-ext.
 """
+
 from pathlib import Path
 
 # from subprocess import check_call
@@ -37,7 +38,7 @@ def test_doit_ext_integration(
 
     # TODO: Why does dedent not work with indented code here
     dodo_py_contents = dedent(
-        f"""
+        """
 from doit_ext.compose import ComposeTask
 from pathlib import Path
 def task_main():

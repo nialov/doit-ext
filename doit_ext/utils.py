@@ -1,6 +1,7 @@
 """
 General utilities.
 """
+
 from typing import Any
 
 
