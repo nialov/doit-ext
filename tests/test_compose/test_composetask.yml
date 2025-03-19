@@ -2,6 +2,7 @@ actions:
 - mkdir -p tmp
 - mkdir -p tmp2
 - python script.py --csv pyproject.toml target.csv
+- <class 'function'>
 file_dep:
 - dodo.py
 - setup.py
@@ -10,5 +11,6 @@ name: new_name
 targets:
 - target.csv
 uptodate:
-- <class 'doit.tools.config_changed'>
 - <class 'doit.task.result_dep'>
+- <class 'function'>
+- <class 'doit.tools.config_changed'>
