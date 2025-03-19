@@ -29,7 +29,7 @@
             buildInputs = lib.attrValues {
               python3-env = pkgs.python3.withPackages (p:
                 p.doit-ext.propagatedBuildInputs
-                ++ [ p.pytest p.pytest-regressions ]);
+                ++ [ p.pytest p.pytest-regressions p.ipython ]);
             };
             shellHook = config.pre-commit.installationScript;
           };
