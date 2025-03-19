@@ -130,6 +130,7 @@ class UpToDate(NamedTuple):
     result_deps: Tuple[str, ...]
     config_changed: Optional[Dict[str, Any]]
     run_once: bool
+    extra_entries: Tuple
 
     def update_result_deps(self, *result_deps: Any) -> "UpToDate":
         """
@@ -139,6 +140,7 @@ class UpToDate(NamedTuple):
             result_deps=tuple([*self.result_deps, *result_deps]),
             config_changed=self.config_changed,
             run_once=self.run_once,
+            extra_entries=self.extra_entries,
         )
 
     def update_config_changed(self, config: Dict[str, Any]) -> "UpToDate":
@@ -154,6 +156,7 @@ class UpToDate(NamedTuple):
             result_deps=self.result_deps,
             config_changed=updated_config_changed,
             run_once=self.run_once,
+            extra_entries=self.extra_entries,
         )
 
     def update_run_once(self, value: bool) -> "UpToDate":
@@ -164,6 +167,18 @@ class UpToDate(NamedTuple):
             result_deps=self.result_deps,
             config_changed=self.config_changed,
             run_once=value,
+            extra_entries=self.extra_entries,
+        )
+
+    def update_extra_entries(self, value: Any) -> "UpToDate":
+        """
+        Update extra_entries.
+        """
+        return UpToDate(
+            result_deps=self.result_deps,
+            config_changed=self.config_changed,
+            run_once=self.run_once,
+            extra_entries=tuple([*self.extra_entries, value]),
         )
 
     def compile(self) -> Tuple[Any, ...]:
@@ -177,6 +192,8 @@ class UpToDate(NamedTuple):
 
         if self.config_changed is not None:
             compiled = [*compiled, config_changed(self.config_changed)]
+
+        compiled = [*compiled, *self.extra_entries]
         return tuple(compiled)
 
 
@@ -189,7 +206,9 @@ class ComposeTask(NamedTuple):
     file_dep: Tuple[StrPathType, ...] = ()
     task_dep: Tuple[FuncType, ...] = ()
     targets: Tuple[StrPathType, ...] = ()
-    uptodate: UpToDate = UpToDate(result_deps=(), config_changed=None, run_once=False)
+    uptodate: UpToDate = UpToDate(
+        result_deps=(), config_changed=None, run_once=False, extra_entries=()
+    )
     name: Optional[str] = None
 
     def update(
@@ -214,6 +233,11 @@ class ComposeTask(NamedTuple):
         """
         old_values_dict = _resolve_named_tuple_dict(self)
         for key, new_values in update_values.items():
+            if key == "uptodate":
+                old_values_dict["uptodate"] = self.uptodate.update_extra_entries(
+                    new_values
+                )
+                continue
             if key == "config_changed":
                 assert isinstance(new_values, dict)
                 old_values_dict["uptodate"] = self.uptodate.update_config_changed(
@@ -332,6 +356,15 @@ class ComposeTask(NamedTuple):
         Add a name overwriting any existing.
         """
         return self.update(name=name)
+
+    def add_uptodate_entry(self, entry: Any) -> "ComposeTask":
+        """
+        Add an entry to uptodate list.
+
+        This can be used to specify, e.g., check_timestamp_unchanged
+        (https://pydoit.org/uptodate.html#check-timestamp-unchanged).
+        """
+        return self.update(uptodate=entry)
 
     def toggle_run_once(self) -> "ComposeTask":
         """
