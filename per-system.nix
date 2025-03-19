@@ -8,7 +8,7 @@
             inherit system;
             overlays = [
               inputs.nix-extra.overlays.default
-              (final: prev: {
+              (_: prev: {
                 pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
                   (_: pythonPrev: {
                     "doit-ext" = pythonPrev.doit-ext.overridePythonAttrs
@@ -16,7 +16,6 @@
                       (_: { src = self.outPath; });
                   })
                 ];
-                inherit (final.python3Packages) doit-ext;
               })
 
             ];
@@ -27,11 +26,11 @@
         _module.args.pkgs = mkNixpkgs inputs.nixpkgs;
         devShells = {
           default = pkgs.mkShell {
-            buildInputs =
-              lib.attrValues { inherit (pkgs) poetry-with-c-tooling; };
-            shellHook = config.pre-commit.installationScript + ''
-              export PROJECT_DIR="$PWD"
-            '';
+            buildInputs = lib.attrValues {
+              python3-env = pkgs.python3.withPackages
+                (p: p.doit-ext.propagatedBuildInputs ++ [ p.pytest ]);
+            };
+            shellHook = config.pre-commit.installationScript;
           };
 
         };
@@ -40,8 +39,6 @@
           check.enable = true;
           settings.hooks = {
             nixfmt.enable = true;
-            black.enable = true;
-            black-nb.enable = true;
             nbstripout.enable = true;
             isort = { enable = true; };
             shellcheck.enable = true;
@@ -56,10 +53,11 @@
         };
         packages = {
 
-          inherit (pkgs) doit-ext poetry-run sync-git-tag-with-poetry;
+          inherit (pkgs.python3Packages) doit-ext;
           default = self'.packages.doit-ext;
 
         };
+        legacyPackages = pkgs;
       };
 
   })
