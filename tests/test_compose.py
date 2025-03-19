@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from doit.task import Task, dict_to_task
-from doit.tools import config_changed, result_dep, run_once
+from doit.tools import check_timestamp_unchanged, config_changed, result_dep
 
 import tests
 from doit_ext import compose
@@ -54,7 +54,10 @@ def test_uptodate(result_deps, config_changed, run_once):
     assert config_changed is None or isinstance(config_changed, dict)
 
     result = compose.UpToDate(
-        result_deps=result_deps, config_changed=config_changed, run_once=False
+        result_deps=result_deps,
+        config_changed=config_changed,
+        run_once=False,
+        extra_entries=(),
     )
 
     result_dep_additions = ("yes",)
@@ -111,6 +114,7 @@ def test_composetask(data_regression):
         .add_name(new_name)
         .add_actions(lambda: True)
         .toggle_run_once()
+        .add_uptodate_entry(check_timestamp_unchanged("some_directory"))
     )
 
     assert compose_task.uptodate.config_changed is not None
@@ -122,7 +126,7 @@ def test_composetask(data_regression):
     compiled_compose_task = compose_task.compile()
 
     # Depends on order of result_dep and config_changed
-    assert base_cmd in compiled_compose_task["uptodate"][-1].config
+    assert base_cmd in compiled_compose_task["uptodate"][-2].config
 
     assert isinstance(compiled_compose_task, dict)
 
@@ -142,10 +146,15 @@ def test_composetask(data_regression):
             )
 
         if key == "uptodate":
-            assert all(
-                isinstance(val, (config_changed, result_dep)) or val == run_once
-                for val in values
-            )
+            # We expect these class instance to be in the values
+            for expected_class in (
+                config_changed,
+                result_dep,
+                check_timestamp_unchanged,
+            ):
+                assert any(isinstance(val, expected_class) for val in values)
+            assert any("run_once" in str(val) for val in values)
+            assert len(values) == 4
         if key == "name":
             assert isinstance(values, str)
             assert values == new_name
