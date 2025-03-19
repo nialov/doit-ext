@@ -3,7 +3,17 @@ Compose doit tasks.
 """
 
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 from doit.tools import config_changed, result_dep
 
@@ -32,15 +42,23 @@ class Action(NamedTuple):
     Action.
     """
 
-    base: str
+    base: Union[str, Sequence[str]]
     parameters: Tuple[Union[FileDep, Target, Any], ...] = ()
+
+    @property
+    def base_str(self) -> str:
+        """
+        Get base as a joined string.
+        """
+        if isinstance(self.base, str):
+            return self.base
+        return str.join(" ", self.base)
 
     def validate(self):
         """
         Validate inputs.
         """
-        assert isinstance(self.base, str)
-        if not self.base.count("{}") == len(self.parameters):
+        if not self.base_str.count("{}") == len(self.parameters):
             raise ValueError(
                 "Expected base to have {} format spots for every parameter."
             )
@@ -51,8 +69,8 @@ class Action(NamedTuple):
         """
         self.validate()
         if len(self.parameters) == 0:
-            return self.base
-        return self.base.format(
+            return self.base_str
+        return self.base_str.format(
             *[
                 param if not isinstance(param, (FileDep, Target)) else param.value
                 for param in self.parameters
@@ -323,7 +341,7 @@ class ComposeTask(NamedTuple):
 
                 # Make task depend on the base action string
                 old_values_dict["uptodate"] = self.uptodate.update_config_changed(
-                    config={action.base: action.base}
+                    config={action.base_str: action.base_str}
                 )
         old_values_dict["actions"] = tuple(compiled_actions)
         return ComposeTask(**old_values_dict)
