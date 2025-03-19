@@ -15,7 +15,7 @@ from typing import (
     Union,
 )
 
-from doit.tools import config_changed, result_dep
+from doit.tools import config_changed, result_dep, run_once
 
 FuncType = Union[Callable, str]
 StrPathType = Union[Path, str]
@@ -129,6 +129,7 @@ class UpToDate(NamedTuple):
 
     result_deps: Tuple[str, ...]
     config_changed: Optional[Dict[str, Any]]
+    run_once: bool
 
     def update_result_deps(self, *result_deps: Any) -> "UpToDate":
         """
@@ -137,6 +138,7 @@ class UpToDate(NamedTuple):
         return UpToDate(
             result_deps=tuple([*self.result_deps, *result_deps]),
             config_changed=self.config_changed,
+            run_once=self.run_once,
         )
 
     def update_config_changed(self, config: Dict[str, Any]) -> "UpToDate":
@@ -151,16 +153,31 @@ class UpToDate(NamedTuple):
         return UpToDate(
             result_deps=self.result_deps,
             config_changed=updated_config_changed,
+            run_once=self.run_once,
+        )
+
+    def update_run_once(self, value: bool) -> "UpToDate":
+        """
+        Update run_once addition.
+        """
+        return UpToDate(
+            result_deps=self.result_deps,
+            config_changed=self.config_changed,
+            run_once=value,
         )
 
     def compile(self) -> Tuple[Any, ...]:
         """
         Compile UpToDate into doit uptodate values.
         """
-        called_result_deps = tuple(result_dep(dep) for dep in self.result_deps)
-        if self.config_changed is None:
-            return called_result_deps
-        return tuple([config_changed(self.config_changed), *called_result_deps])
+        compiled = [result_dep(dep) for dep in self.result_deps]
+
+        if self.run_once:
+            compiled = [*compiled, run_once]
+
+        if self.config_changed is not None:
+            compiled = [*compiled, config_changed(self.config_changed)]
+        return tuple(compiled)
 
 
 class ComposeTask(NamedTuple):
@@ -172,7 +189,7 @@ class ComposeTask(NamedTuple):
     file_dep: Tuple[StrPathType, ...] = ()
     task_dep: Tuple[FuncType, ...] = ()
     targets: Tuple[StrPathType, ...] = ()
-    uptodate: UpToDate = UpToDate(result_deps=(), config_changed=None)
+    uptodate: UpToDate = UpToDate(result_deps=(), config_changed=None, run_once=False)
     name: Optional[str] = None
 
     def update(
@@ -189,6 +206,7 @@ class ComposeTask(NamedTuple):
             Dict[str, Any],
             str,
             ActionsType,
+            bool,
         ],
     ) -> "ComposeTask":
         """
@@ -208,6 +226,10 @@ class ComposeTask(NamedTuple):
                 old_values_dict["uptodate"] = self.uptodate.update_result_deps(
                     *new_values
                 )
+                continue
+            if key == "run_once":
+                assert isinstance(new_values, bool)
+                old_values_dict["uptodate"] = self.uptodate.update_run_once(new_values)
                 continue
             # if key == "actions":
             #     assert isinstance(new_values, tuple)
@@ -310,6 +332,12 @@ class ComposeTask(NamedTuple):
         Add a name overwriting any existing.
         """
         return self.update(name=name)
+
+    def toggle_run_once(self) -> "ComposeTask":
+        """
+        Toggle run_once in uptodate config.
+        """
+        return self.update(run_once=not self.uptodate.run_once)
 
         # current_config_changed = (
         #     self.uptodate._config_changed.copy()
