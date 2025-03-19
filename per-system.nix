@@ -27,8 +27,9 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs = lib.attrValues {
-              python3-env = pkgs.python3.withPackages
-                (p: p.doit-ext.propagatedBuildInputs ++ [ p.pytest ]);
+              python3-env = pkgs.python3.withPackages (p:
+                p.doit-ext.propagatedBuildInputs
+                ++ [ p.pytest p.pytest-regression ]);
             };
             shellHook = config.pre-commit.installationScript;
           };
