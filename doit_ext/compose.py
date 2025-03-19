@@ -159,21 +159,18 @@ class ComposeTask(NamedTuple):
 
     def update(
         self,
-        update_values: Dict[
-            str,
-            Union[
-                Tuple[
-                    Union[
-                        FuncType,
-                        StrPathType,
-                        result_dep,
-                    ],
-                    ...,
+        **update_values: Union[
+            Tuple[
+                Union[
+                    FuncType,
+                    StrPathType,
+                    result_dep,
                 ],
-                Dict[str, Any],
-                str,
-                ActionsType,
+                ...,
             ],
+            Dict[str, Any],
+            str,
+            ActionsType,
         ],
     ) -> "ComposeTask":
         """
@@ -249,13 +246,13 @@ class ComposeTask(NamedTuple):
         """
         Add actions to task.
         """
-        return self.update(dict(actions=actions))
+        return self.update(actions=actions)
 
     def add_file_deps(self, *file_deps: StrPathType) -> "ComposeTask":
         """
         Add file dependencies to task.
         """
-        return self.update(dict(file_dep=file_deps))
+        return self.update(file_dep=file_deps)
 
     def add_task_deps(self, *task_deps: FuncType) -> "ComposeTask":
         """
@@ -265,13 +262,13 @@ class ComposeTask(NamedTuple):
             _resolve_task_dep(task_dep=task_dep) for task_dep in task_deps
         )
 
-        return self.update(dict(task_dep=tuple(resolved_task_deps)))
+        return self.update(task_dep=tuple(resolved_task_deps))
 
     def add_targets(self, *targets: StrPathType) -> "ComposeTask":
         """
         Add targets to task.
         """
-        return self.update(dict(targets=targets))
+        return self.update(targets=targets)
 
     def add_result_dep(self, *result_deps: FuncType) -> "ComposeTask":
         """
@@ -280,7 +277,7 @@ class ComposeTask(NamedTuple):
         See: https://pydoit.org/uptodate.html#result-dependency
         """
         result_deps_called = (_resolve_task_dep(dep) for dep in result_deps)
-        return self.update(dict(result_deps=tuple(result_deps_called)))
+        return self.update(result_deps=tuple(result_deps_called))
 
     def add_config_dependency(self, config_deps: Dict[str, Any]) -> "ComposeTask":
         """
@@ -288,13 +285,13 @@ class ComposeTask(NamedTuple):
 
         See: https://pydoit.org/uptodate.html#config-changed
         """
-        return self.update(dict(config_changed=config_deps))
+        return self.update(config_changed=config_deps)
 
     def add_name(self, name: str) -> "ComposeTask":
         """
         Add a name overwriting any existing.
         """
-        return self.update(dict(name=name))
+        return self.update(name=name)
 
         # current_config_changed = (
         #     self.uptodate._config_changed.copy()
