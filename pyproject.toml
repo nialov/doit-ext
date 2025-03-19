@@ -1,8 +1,8 @@
-[tool.poetry]
+[project]
 name = "doit-ext"
 version = "0.0.1"
 description = "Utilities for doit task specification."
-authors = ["nialov <nikolasovaskainen@gmail.com>"]
+authors = [{name= "nialov", email = "nikolasovaskainen@gmail.com"}]
 readme = "README.rst"
 license = "MIT"
 # Make sure hyphens/underscores are correct in urls
@@ -21,21 +21,18 @@ classifiers = [
     "Environment :: Plugins"
 ]
 include = ["CHANGELOG.md"]
+requires-python = ">=3.8,<3.13"
+dependencies = [
+    "doit[toml] >=0.36.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8,<3.12"
-doit = {extras = ["toml"], version = ">=0.36.0"}
-
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 ipython = "*"
 pytest = "*"
 toml = "*"
 pytest-regressions = "*"
 mypy = "*"
 pylint = "*"
-
-[tool.poetry.extras]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
