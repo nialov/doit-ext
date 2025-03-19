@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from doit.task import Task, dict_to_task
-from doit.tools import config_changed, result_dep
+from doit.tools import config_changed, result_dep, run_once
 
 import tests
 from doit_ext import compose
@@ -35,6 +35,10 @@ def test__resolve_task_dep(task_dep):
 
 
 @pytest.mark.parametrize(
+    "run_once",
+    [True, False],
+)
+@pytest.mark.parametrize(
     "result_deps,config_changed",
     [
         (("hello_world", "hey_there"), None),
@@ -42,14 +46,16 @@ def test__resolve_task_dep(task_dep):
         (("hello_world", "hey_there"), dict(some_key=2, y="z")),
     ],
 )
-def test_uptodate(result_deps, config_changed):
+def test_uptodate(result_deps, config_changed, run_once):
     """
     Test UpToDate NamedTuple.
     """
     assert isinstance(result_deps, tuple)
     assert config_changed is None or isinstance(config_changed, dict)
 
-    result = compose.UpToDate(result_deps=result_deps, config_changed=config_changed)
+    result = compose.UpToDate(
+        result_deps=result_deps, config_changed=config_changed, run_once=False
+    )
 
     result_dep_additions = ("yes",)
     updated_result = result.update_result_deps(*result_dep_additions)
@@ -63,12 +69,14 @@ def test_uptodate(result_deps, config_changed):
 
     config_updated_result = updated_result.update_config_changed(
         config_changed_additions
-    )
+    ).update_run_once(run_once)
 
     assert config_updated_result.config_changed is not None
     for key, values in config_changed_additions.items():
         assert key in config_updated_result.config_changed
         assert config_updated_result.config_changed[key] == values
+
+    assert config_updated_result.run_once == run_once
 
 
 def test_composetask(data_regression):
@@ -102,6 +110,7 @@ def test_composetask(data_regression):
         )
         .add_name(new_name)
         .add_actions(lambda: True)
+        .toggle_run_once()
     )
 
     assert compose_task.uptodate.config_changed is not None
@@ -112,7 +121,8 @@ def test_composetask(data_regression):
 
     compiled_compose_task = compose_task.compile()
 
-    assert base_cmd in compiled_compose_task["uptodate"][0].config
+    # Depends on order of result_dep and config_changed
+    assert base_cmd in compiled_compose_task["uptodate"][-1].config
 
     assert isinstance(compiled_compose_task, dict)
 
@@ -132,7 +142,10 @@ def test_composetask(data_regression):
             )
 
         if key == "uptodate":
-            assert all(isinstance(val, (config_changed, result_dep)) for val in values)
+            assert all(
+                isinstance(val, (config_changed, result_dep)) or val == run_once
+                for val in values
+            )
         if key == "name":
             assert isinstance(values, str)
             assert values == new_name
