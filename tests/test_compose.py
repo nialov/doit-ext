@@ -101,6 +101,7 @@ def test_composetask(data_regression):
             )
         )
         .add_name(new_name)
+        .add_actions(lambda: True)
     )
 
     assert compose_task.uptodate.config_changed is not None

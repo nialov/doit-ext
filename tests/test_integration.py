@@ -51,6 +51,7 @@ def task_main():
         .add_config_dependency(dict(y=4))
         .add_file_deps(Path("setup.py"))
         .add_actions(mkdir_cmd_2)
+        .add_actions(lambda: True)
     )
     return compose_task.compile()
             """.strip()
