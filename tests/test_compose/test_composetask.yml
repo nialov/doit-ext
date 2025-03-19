@@ -14,3 +14,4 @@ uptodate:
 - <class 'doit.task.result_dep'>
 - <class 'function'>
 - <class 'doit.tools.config_changed'>
+- <class 'doit.tools.check_timestamp_unchanged'>
